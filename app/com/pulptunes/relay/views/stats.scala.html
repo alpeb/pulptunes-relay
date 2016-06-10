@@ -1,0 +1,55 @@
+@(
+  webSocketChannels: Map[String, play.api.libs.iteratee.Concurrent.Channel[play.api.libs.json.JsValue]],
+  longPollingChannels:  Map[String, play.api.libs.iteratee.Concurrent.Channel[play.api.libs.json.JsValue]],
+  longPollingStarts:  Map[String, Long],
+  longPollingQueuedGetRequests: Map[String, List[com.pulptunes.relay.models.GetRequestData]],
+  longPollingQueuedSendFiles: Map[String, List[com.pulptunes.relay.models.SendFileData]]
+)(implicit config: play.api.Configuration)
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<ul>
+  <li>Version: @config.getString("app.version")</li>
+  <li>
+    Websocket enumerators:
+    <ul>
+      @for((subdomain, enum) <- webSocketChannels) {
+        <li>@subdomain</li>
+      }
+    </ul>
+  </li>
+  <li>
+    Longpolling enumerators:
+    <table border="1">
+      <thead>
+        <th>Subdomain</th>
+        <th>Started</th>
+        <th>Queue size</th>
+      </thead>
+      <tbody>
+        @for((subdomain, enum) <- longPollingChannels) {
+          <tr>
+            <td>@subdomain</td>
+            <td>
+              @longPollingStarts.get(subdomain).map { start =>
+                @{new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(start)}
+              }
+            </td>
+            <td>
+              @longPollingQueuedGetRequests.get(subdomain).map { requests =>
+                @requests.size
+              } +
+              @longPollingQueuedSendFiles.get(subdomain).map { requests =>
+                @requests.size
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </li>
+</ul>
+</body>
+</html>

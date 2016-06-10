@@ -1,0 +1,16 @@
+HEAD    /pt_lb_check                          com.pulptunes.relay.controllers.LB.index
+
+GET     /v2.0.0/test                          com.pulptunes.relay.controllers.Dispatcher.test
+GET     /v2.0.0/longpoll/:subdomain           com.pulptunes.relay.controllers.Dispatcher.longPollGet(subdomain: String)
+POST    /v2.0.0/longpoll/:subdomain           com.pulptunes.relay.controllers.Dispatcher.longPollPost(subdomain: String)
+GET     /v2.0.0/dispatcher                    com.pulptunes.relay.controllers.Dispatcher.join
+GET     /v2.0.0/songs/*songRequest            com.pulptunes.relay.controllers.GetFile.song(songRequest: String)
+GET     /v2.0.0/getAlbumCover/*coverRequest   com.pulptunes.relay.controllers.GetFile.cover(coverRequest: String)
+POST    /v2.0.0/sendfile                      com.pulptunes.relay.controllers.WebServices.sendfile
+POST    /v2.0.0/processrequest                com.pulptunes.relay.controllers.WebServices.processRequest
+POST    /v2.0.0/upload/:streamId              com.pulptunes.relay.controllers.Upload.index(streamId: String)
+
+GET     /                                     com.pulptunes.relay.controllers.Dispatcher.main
+GET     /stats                                com.pulptunes.relay.controllers.Stats.index
+GET     /*uri                                 com.pulptunes.relay.controllers.Dispatcher.index(uri: String)
+POST    /*uri                                 com.pulptunes.relay.controllers.Dispatcher.index(uri: String)

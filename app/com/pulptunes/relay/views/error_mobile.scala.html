@@ -1,0 +1,21 @@
+@(error: String)(implicit config: play.api.Configuration)
+<html>
+  <head>
+    <title>PulpTunes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/stylesheets/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="assets/stylesheets/font-awesome.min.css" rel="stylesheet" media="screen">
+  </head>
+
+  <body>
+    <div style="width:250px; margin:0 auto; padding-top:20px" >
+      <img src="assets/img/logo_transparent.png"/>
+    </div>
+    <div class="text-center" style="width:200px; margin:30px auto; padding:15px; text-align:center; border:2px solid #000; border-radius:30px">
+      <div style="margin-bottom:20px">
+        <i class="icon-frown icon-3x"></i>
+      </div>
+      @error
+    </div>
+  </body>
+</html>

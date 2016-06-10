@@ -1,0 +1,35 @@
+# VIM temporary files
+*.swp
+
+# Emacs temporary files
+\#*#
+.#*
+
+# SBT
+project/project
+project/target
+target
+dist
+
+# IDE project files/directories
+/.idea
+/.idea_modules
+/*.iml
+/.ensime*
+/.classpath
+/.project
+
+# Mac files
+.DS_Store
+
+# Others
+logs
+tmp
+tags
+.history
+/.settings
+.cache
+/out
+/RUNNING_PID
+/nohup.out
+launch
