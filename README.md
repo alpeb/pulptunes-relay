@@ -133,7 +133,7 @@ Deploying and Running
 
 This is a standard Play application. Please read [Play's docs](https://playframework.com/documentation/2.5.x/Deploying) to decide the best deployment/running strategy for you.
 
-In pulptunes.com we run directly from the source by issuing `sbt start` one time for each instance and passing-on the appropriate config overrides.
+In pulptunes.com we run directly from the source by issuing `sbt start` one time for each instance, passing-on the appropriate config overrides and `-Dhttp.port=x` to specify the port for each instance.
 
 When running from the source, each instance can be stopped with `kill $(cat target/universal/stage/RUNNING_PID)`.
 
@@ -142,8 +142,6 @@ These are the config directives you should override in production. Each instance
 ```
 pulp.server_id="pulp1"
 pulp.production=true
-slick.dbs.default.driver="slick.driver.MySQLDriver$"
-slick.dbs.default.db.driver="com.mysql.jdbc.Driver"
 slick.dbs.default.db.url="jdbc:mysql://localhost/pulptunes"
 slick.dbs.default.db.user="root"
 slick.dbs.default.db.password=""
