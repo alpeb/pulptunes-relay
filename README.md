@@ -99,7 +99,7 @@ To do so, first set the field `online` to `false` in the entry corresponding to 
 Database
 ---------
 
-By default, the database engine we use is MySQL, and the database name is `pulptunes`. You can change this by changing the `slick.dbs.default.db` config directives located in `conf/application.conf`. To use a different db engine make sure you also properly set up its JDBC driver dependency in `build.sbt`. The database username and password need to be provided as explained in [Deploying and Running](#deploying-and-running).
+By default, the database engine we use is MySQL, and the database name is `pulptunes`. You can change this by changing the `play.evolutions.schema` and `slick.dbs.default.db.*` config directives located in `conf/application.conf`. To use a different db engine make sure you also properly set up its JDBC driver dependency in `build.sbt`. The database username and password need to be provided as explained in [Deploying and Running](#deploying-and-running).
 
 ### Database Tables
 
@@ -133,15 +133,12 @@ Deploying and Running
 
 This is a standard Play application. Please read [Play's docs](https://playframework.com/documentation/2.5.x/Deploying) to decide the best deployment/running strategy for you.
 
-In pulptunes.com we run directly from the source by issuing `sbt start` one time for each instance, passing-on the appropriate config overrides and `-Dhttp.port=x` to specify the port for each instance.
-
-When running from the source, each instance can be stopped with `kill $(cat target/universal/stage/RUNNING_PID)`.
-
-These are the config directives you should override in production. Each instance launched should have a different `pulp.server_id` directive, and be referred in the table `servers`:
+These are the config directives you should override in production. You can override them through the command-line as explained in Play's docs. Each instance launched should have a different `pulp.server_id` directive, and be referred in the table `servers`. Also make sure your start script sets a different port for each instance with `-Dhttp.port=X`:
 
 ```
 pulp.server_id="pulp1"
 pulp.production=true
+play.evolutions.schema=pulptunes
 slick.dbs.default.db.url="jdbc:mysql://localhost/pulptunes"
 slick.dbs.default.db.user="root"
 slick.dbs.default.db.password=""
