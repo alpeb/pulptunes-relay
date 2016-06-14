@@ -42,7 +42,7 @@ class LicenseProvider @Inject() (config: Configuration, protected val dbConfigPr
     val res = db.run {
       licenses.filter(_.subdomain === subdomain).result.headOption
     }
-    res.map(_ toRightXor(new Exception("Invalid subdomain"))).recover {
+    res.map(_ toRightXor(new Exception(s"Invalid subdomain: $subdomain"))).recover {
       case t => t.left
     }
   }
