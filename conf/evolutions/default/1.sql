@@ -38,9 +38,7 @@ CREATE TABLE `serving_listeners` (
   CONSTRAINT `serving_listeners_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `servers` (`id`, `status`, `public_dns`, `online`, `online_test`) VALUES
-  ('pulp1',  'test', 'pulp1.localhost.localdomain:9000', 'true',  'false'),
-  ('pulp2', 'test', 'pulp2.localhost.localdomain:9001',  'false', 'false');
+INSERT INTO `servers` (`id`, `status`, `public_dns`, `online`, `online_test`) VALUES ('pulp1',  'test', 'pulp1.localhost:9000', 'true',  'false');
 
 CREATE TABLE `subdomain_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
