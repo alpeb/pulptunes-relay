@@ -116,13 +116,15 @@ class WebServices @Inject() (config: Configuration, system: ActorSystem, @Named(
               jsValue.toString
 
           Logger.debug(s"$subdomain - GetRequest response: $jsonLog")
-          (jsValue \ "invalidUri").toOption.map(_ => Ok(Json.obj("invalidUri" -> true)).right)
-            .orElse((jsValue \ "redirect").toOption.map(redirect => Ok(Json.obj("redirect" -> (redirect.as[String]))).right))
-            .orElse(for {
-              html <- (jsValue \ "html").toOption
-              headers <- (jsValue \ "headers").toOption
-            } yield Ok(Json.obj("html" -> (html.as[String]), "headers" -> headers)).right)
-            .getOrElse(Ok(jsValue).right)
+          val res = for {
+            _ <- Xor.fromEither((jsValue \ "invalidUri").toEither).map(_ => Ok(Json.obj("invalidUri" -> true))).swap
+            _ <- Xor.fromEither((jsValue \ "redirect").toEither).map(redirect => Ok(Json.obj("redirect" -> (redirect.as[String])))).swap
+            _ <- (for {
+              html <- Xor.fromEither((jsValue \ "html").toEither)
+              headers <- Xor.fromEither((jsValue \ "headers").toEither)
+            } yield Ok(Json.obj("html" -> (html.as[String]), "headers" -> headers))).swap
+          } yield jsValue
+          res.fold(_.right, Ok(_).right)
         case t: String =>
           // Happens when java app goes offline but Leave isn't called, so I do it here
           Logger.debug(s"$subdomain - GetRequest timed out")

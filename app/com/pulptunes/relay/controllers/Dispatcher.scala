@@ -79,20 +79,23 @@ class Dispatcher @Inject() (ws: WSClient, system: ActorSystem, @Named("pulp-even
             wsResp.json.toString
 
         Logger.debug(s"$subdomain - Dispatcher.index received: $received")
-        (wsResp.json \ "invalidUri").toOption.map(_ => NotFound)
-          .orElse((wsResp.json \ "redirect").toOption.map(url => Redirect(url.as[String])))
-          .orElse((wsResp.json \ "error").toOption.map{ error =>
+        val res = for {
+          // these will get prettier with play 2.6 (with scala 2.12 (right-biased Either))
+          _ <- Xor.fromEither((wsResp.json \ "invalidUri").toEither).map(_ => NotFound).swap
+          _ <- Xor.fromEither((wsResp.json \ "redirect").toEither).map(url => Redirect(url.as[String])).swap
+          _ <- Xor.fromEither((wsResp.json \ "error").toEither).map{ error =>
             Logger.warn(s"$subdomain - Error: ${error.as[String]}")
             Logger.debug(s"$subdomain - ref: " + request.headers.get(REFERER).getOrElse("unknown"))
             Ok(errorView(error.as[String]))
-          })
-          .orElse((wsResp.json \ "html").toOption.map{ html =>
+          }.swap
+          _ <- Xor.fromEither((wsResp.json \ "html").toEither).map{ html =>
             var headers = List[(String, String)]()
             (wsResp.json \ "headers").asOpt[Map[String, String]]
               .foreach(_.foreach(header => headers = headers :+ header))
             Ok(html.as[String]).as("text/html").withHeaders(headers: _*)
-          })
-          .getOrElse(Ok(wsResp.json))
+          }.swap
+        } yield wsResp.json
+        res.fold(identity, Ok(_))
       } catch {
         // happens if the target server is down (wsResp.json above throws an exception)
         case jpe: JsonParseException =>
