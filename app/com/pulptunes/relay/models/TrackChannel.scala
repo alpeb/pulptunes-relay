@@ -4,7 +4,7 @@ import akka.util.ByteString
 import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.iteratee.Input
 
-class TrackChannel(val channel: Channel[ByteString]) extends Channel[ByteString] {
+class TrackChannel(val subdomain: String, val fileType: String, val channel: Channel[ByteString]) extends Channel[ByteString] {
 
   private var finished = false
 

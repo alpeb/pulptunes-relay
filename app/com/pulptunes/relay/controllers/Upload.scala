@@ -25,15 +25,12 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
   private def fileParser(streamId: String) = BodyParser.iteratee { requestHeader =>
     implicit val timeout = Timeout(2.second)
     val futChannelDataFuture = enumsRegistryActor ? RetrieveChannel(streamId)
-    val futIteratee = futChannelDataFuture.mapTo[(String, String, TrackChannel)].map { channelData =>
-      val subdomain = channelData._1
-      val channel = channelData._3
-
-      Logger.debug(s"$subdomain - Upload headers: ${requestHeader.headers.toString}");
+    val futIteratee = futChannelDataFuture.mapTo[TrackChannel].map { trackChannel =>
+      Logger.debug(s"${trackChannel.subdomain} - Upload headers: ${requestHeader.headers.toString}");
       
-      fold(channel).map { channel =>
+      fold(trackChannel).map { channel =>
         // need to push an empty byte for the stream to end
-        Logger.debug(s"$subdomain - Finished uploading file")
+        Logger.debug(s"${trackChannel.subdomain} - Finished uploading file")
         channel.push(ByteString())
         enumsRegistryActor ! DiscardChannel(streamId)
         Right(())

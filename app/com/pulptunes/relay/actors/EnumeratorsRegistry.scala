@@ -22,7 +22,7 @@ class EnumeratorsRegistry @Inject() (config: Configuration) extends Actor {
   
   val serverId = config.getString("pulp.server_id").get
 
-  var channels = Map[String, (String, String, TrackChannel)]()
+  var channels = Map[String, TrackChannel]()
 
   def receive = {
     case GetFresh(subdomain, fileType, isRangeRequest) =>
@@ -36,7 +36,7 @@ class EnumeratorsRegistry @Inject() (config: Configuration) extends Actor {
         // client closed connection, before or at streaming completion
         self ! DiscardChannel(key)
       }
-      channels += key -> (subdomain, fileType, new TrackChannel(channel))
+      channels += key -> new TrackChannel(subdomain, fileType, channel)
 
       // need to log the key here cuz of some timeouts I'm having on RetrieveChannel()
       val range = if (isRangeRequest) " (range)" else ""
@@ -49,11 +49,11 @@ class EnumeratorsRegistry @Inject() (config: Configuration) extends Actor {
       sender ! channelData
 
     case DiscardChannel(key) =>
-      channels.get(key) map { channelData =>
-        channelData._3.eofAndEnd()
-        channelData._3.finish()
+      channels.get(key) map { trackChannel =>
+        trackChannel.eofAndEnd()
+        trackChannel.finish()
         channels -= key
-        Logger.info(s"${channelData._1} - Stream for ${channelData._2} ENDED. ${channels.size} active transfers ($key)")
+        Logger.info(s"${trackChannel.subdomain} - Stream for ${trackChannel.fileType} ENDED. ${channels.size} active transfers ($key)")
       }
   }
 }
