@@ -37,7 +37,7 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
 
     Logger.debug(s"$subdomain - Upload headers: ${requestHeader.headers.toString}");
     
-    Streams.iterateeToAccumulator(fold(channel, streamId).map { channel =>
+    Streams.iterateeToAccumulator(fold(channel).map { channel =>
       // need to push an empty byte for the stream to end
       Logger.debug(s"$subdomain - Finished uploading file")
       channel.push(ByteString())
@@ -53,7 +53,7 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
   * is flagged as finished. Otherwise whenever a client interrupts a track download the pulptunes desktop app will
   * continue streaming it here.
   */
-  private def fold(state: TrackChannel, streamId: String) : Iteratee[ByteString, Channel[ByteString]] = {
+  private def fold(state: TrackChannel) : Iteratee[ByteString, Channel[ByteString]] = {
 
     val latency = config.getBoolean("pulp.production") match {
       case Some(true) => 0
