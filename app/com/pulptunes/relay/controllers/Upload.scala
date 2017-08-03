@@ -23,26 +23,23 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
   def index(streamId: String) = Action(fileParser(streamId)) (_ => Ok)
 
   private def fileParser(streamId: String) = BodyParser.iteratee { requestHeader =>
-    import scala.concurrent.Await
-
-    // I don't understand why sometimes this is taking more than a sec since RetrieveChannel() is just
-    // a map lookup
     implicit val timeout = Timeout(2.second)
+    val futChannelDataFuture = enumsRegistryActor ? RetrieveChannel(streamId)
+    val futIteratee = futChannelDataFuture.mapTo[(String, String, TrackChannel)].map { channelData =>
+      val subdomain = channelData._1
+      val channel = channelData._3
 
-    val channelDataFuture = enumsRegistryActor ? RetrieveChannel(streamId)
-    val channelData = Await.result(channelDataFuture, timeout.duration).asInstanceOf[(String, String, TrackChannel)]
-    val subdomain = channelData._1
-    val channel = channelData._3
-
-    Logger.debug(s"$subdomain - Upload headers: ${requestHeader.headers.toString}");
-    
-    fold(channel).map { channel =>
-      // need to push an empty byte for the stream to end
-      Logger.debug(s"$subdomain - Finished uploading file")
-      channel.push(ByteString())
-      enumsRegistryActor ! DiscardChannel(streamId)
-      Right(())
+      Logger.debug(s"$subdomain - Upload headers: ${requestHeader.headers.toString}");
+      
+      fold(channel).map { channel =>
+        // need to push an empty byte for the stream to end
+        Logger.debug(s"$subdomain - Finished uploading file")
+        channel.push(ByteString())
+        enumsRegistryActor ! DiscardChannel(streamId)
+        Right(())
+      }
     }
+    Iteratee.flatten(futIteratee)
   }
 
   /**
