@@ -12,7 +12,6 @@ import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.iteratee._
 import play.api.libs.iteratee.Concurrent.Channel
-import play.api.libs.streams.Streams
 import play.api.mvc._
 
 import com.pulptunes.relay.actors._
@@ -23,7 +22,7 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
 
   def index(streamId: String) = Action(fileParser(streamId)) (_ => Ok)
 
-  private def fileParser(streamId: String) = BodyParser { requestHeader =>
+  private def fileParser(streamId: String) = BodyParser.iteratee { requestHeader =>
     import scala.concurrent.Await
 
     // I don't understand why sometimes this is taking more than a sec since RetrieveChannel() is just
@@ -37,13 +36,13 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
 
     Logger.debug(s"$subdomain - Upload headers: ${requestHeader.headers.toString}");
     
-    Streams.iterateeToAccumulator(fold(channel).map { channel =>
+    fold(channel).map { channel =>
       // need to push an empty byte for the stream to end
       Logger.debug(s"$subdomain - Finished uploading file")
       channel.push(ByteString())
       enumsRegistryActor ! DiscardChannel(streamId)
       Right(())
-    })
+    }
   }
 
   /**
