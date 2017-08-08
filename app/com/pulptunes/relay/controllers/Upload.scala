@@ -56,7 +56,7 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
     def step(i: Input[ByteString]): Iteratee[ByteString, Channel[ByteString]] =
       i match {
         case Input.EOF => Done(state, Input.EOF)
-        case Input.Empty => Cont[ByteString, Channel[ByteString]](i => step(i))
+        case Input.Empty => Cont[ByteString, Channel[ByteString]](step)
         case Input.El(e) =>
           if (latency > 0)
             Thread.sleep(latency)
@@ -69,7 +69,7 @@ class Upload @Inject() (config: Configuration, @Named("pulp-enums-registry") enu
           }
       }
 
-    (Cont[ByteString, Channel[ByteString]](i => step(i)))
+    Cont[ByteString, Channel[ByteString]](step)
   }
 }
 

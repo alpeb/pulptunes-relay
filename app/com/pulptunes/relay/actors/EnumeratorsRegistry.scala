@@ -45,8 +45,8 @@ class EnumeratorsRegistry @Inject() (config: Configuration) extends Actor {
       sender ! ChannelStream(key, completeEnumerator)
 
     case RetrieveChannel(key) => 
-      val channelData = channels(key)
-      sender ! channelData
+      val channelStream = channels(key)
+      sender ! channelStream
 
     case DiscardChannel(key) =>
       channels.get(key) map { trackChannel =>
